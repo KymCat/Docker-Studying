@@ -246,3 +246,73 @@ REPOSITORY   TAG       IMAGE ID       CREATED         SIZE
 load-sql     1.0       240f178eecce   6 seconds ago   274MB # 변경되면서 새롭게 저장
 mysql        5.7       4bc6bc963e6d   20 months ago   689MB
 ```
+
+##
+### 🐟 도커 이미지 삭제
+```bash
+docker image rm [OPT] {이미지 이름[:태그] | 이미지ID} # 정식 명령
+docker rmi [OPT] {이미지 이름[:태그] | 이미지ID} # 단축 명령
+```
+
+도커 이미지는 현재 사용 중인 컨테이너가 없으면 바로 삭제된다. 하지만 컨테이너가 실행 중인 이미지를 삭제한다면 에러가 발생하기에 구동중인 컨테이너를 stop한 뒤 rm을 통해 제거한 후 이미지 삭제가 가능하다.
+
+```bash
+# 이미지 조회
+$ docker images
+REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
+debian       latest    6d8737501634   2 weeks ago   183MB
+ubuntu       14.04    7c06e91f61fa   3 weeks ago   117MB
+
+# 이미지 삭제 시 latest 버전을 제외하면 나머지는 태그를 반드시 명시
+$ docker rmi ubuntu
+Error response from daemon: No such image: ubuntu:latest
+
+$ docker rmi ubuntu:14.04 # 태그 명시 :14.04
+Untagged: ubuntu:14.04
+Deleted: sha256:64483f3496c1373bfd55348e88694d1c4d0c9b660dee6bfef5e12f43b9933b30
+
+# 이미지 조회 -> ubuntu:14.04 제거 완료
+$ docker images
+REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
+debian       latest    6d8737501634   2 weeks ago   183MB
+
+# -q 옵션은 이미지 ID만 보기
+$ docker images -q
+6d8737501634
+
+# 리눅스 셸 스크립트의 변수 활용 방식으로 모든 이미지 제거
+$ docker rmi $(docker images -q)
+Untagged: debian:latest
+Deleted: sha256:6d87375016340817ac2391e670971725a9981cfc24e221c47734681ed0f6c0f5
+
+$ docker images
+REPOSITORY   TAG       IMAGE ID   CREATED   SIZE
+
+# 이미지 다운
+$ docker pull ubuntu:14.04
+$ docker pull ubuntu
+$ docker pull debian
+
+# ubuntu 이름이 포함된 이미지들 제거
+$ docker rmi $(docker images | grep ubuntu)
+Untagged: ubuntu:latest
+Deleted: sha256:7c06e91f61fa88c08cc74f7e1b7c69ae24910d745357e0dfe1d2c0322aaf20f9
+Untagged: ubuntu:14.04
+Deleted: sha256:64483f3496c1373bfd55348e88694d1c4d0c9b660dee6bfef5e12f43b9933b30
+...생략
+
+# 이미지 조회 -> ubuntu 제거 완료
+$ docker images
+REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
+debian       latest    6d8737501634   2 weeks ago   183MB
+
+# -a 옵션 : 컨테이너 사용 중이 아닌 모든 이미지 제거
+$ docker image prune -a
+WARNING! This will remove all images without at least one container associated to them.
+Are you sure you want to continue? [y/N] y
+... 생략
+
+# 이미지 조회 -> 전부 삭제 완료
+$ docker images
+REPOSITORY   TAG       IMAGE ID   CREATED   SIZE
+```
