@@ -55,3 +55,61 @@ exit
 ```
 docker run의 특징은 호스트 서버에 이미지가 다운로드 되어 있지 않아도 로컬에 존재하는 이미지를 도커 허브에서 자동으로 다운로드를 해주고 컨테이너 생성 후 실행까지 함께 처리된다는 점이다.
 > docker run = [pull] + create + start + [command]
+
+##
+### 🐟 실습 : Ngnix 컨테이너 실행
+```bash
+# nginx 1.18 버전 다운로드
+$ docker pull nginx:1.18
+$ docker images
+REPOSITORY   TAG       IMAGE ID       CREATED         SIZE
+nginx        1.18      e90ac5331fe0   4 years ago     200MB
+
+# 컨테이너 실행
+# -d: 컨테이너를 백그라운드에서 실행하고 컨테이너 ID 출력
+# -p : 컨테이너의 해당 포트를 HOST 해당 포트로 오픈 (호스트:컨테이너)
+$ docker run --name webserver1 -d -p 8081:80 nginx:1.18
+aa922c39f991206049030dc5d18770d08d67067af91de41779532f650171c1d2
+
+# 실행 중인 컨테이너 조회
+$ docker ps
+CONTAINER ID   IMAGE        COMMAND                  CREATED         STATUS         PORTS                                     NAMES
+aa922c39f991   nginx:1.18   "/docker-entrypoint.…"   4 seconds ago   Up 3 seconds   0.0.0.0:8081->80/tcp, [::]:8081->80/tcp   webserver1
+
+# localhost:8081 HTTP 요청
+$ curl localhost:8081
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+...
+
+# nginx 컨테이너의 접근 로그 확인 (-f : 실시간, -t: 마지막 로그까지)
+$ docker logs -f webserver1
+...
+172.17.0.1 - - [08/Sep/2025:09:29:49 +0000] "GET / HTTP/1.1" 200 612 "-" "curl/8.5.0" "-"
+172.17.0.1 - - [08/Sep/2025:09:31:16 +0000] "GET / HTTP/1.1" 200 612 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36" "-"
+
+# 컨테이너 정지
+$ docker stop webserver1
+webserver1
+
+# localhost:8081 HTTP 요청 : 컨테이너를 정지했으므로 실패
+$ curl localhost:8081
+curl: (7) Failed to connect to localhost port 8081 after 0 ms: Could not connect to server
+
+# nginx 컨테이너 실행
+$ docker start webserver1
+webserver1
+
+# vi 편집기로  index.html 내용을 변경
+$ vi index.html
+<h1>Hello world!</h1>
+
+# 도커 cp 명령을 통해 컨테이너 내부 index.html 파일 경로에 복사
+$ docker cp index.html webserver1:/usr/share/nginx/html/index.html
+
+# 변경된 내용 확인
+$ curl localhost:8081
+<h1>Hello World!</h1>
+```
