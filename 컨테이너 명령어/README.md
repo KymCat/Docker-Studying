@@ -57,6 +57,52 @@ docker run의 특징은 호스트 서버에 이미지가 다운로드 되어 있
 > docker run = [pull] + create + start + [command]
 
 ##
+### 🐟 컨테이너 재시작 및 일시정지
+```bash
+docker pause 컨테이너   # 컨테이너 일시정지
+docker unpause 컨테이너 # 컨테이너 일시정지 해제
+docker restart 컨테이너 # 컨테이너 재시작
+```
+- ***docker pause/unpause***  
+    docker pause 명령은 지정된 컨테이너의 모든 프로세스를 일시 중단한다. 프로세스를 중지할 때 SIGSTOP 신호가 사용된다.
+
+- ***docker restart***  
+    컨테이너 재시작은 기존 컨테이너 프로세스를 정지하고 새로운 컨테이너 프로세스를 시작하는 것이다. 컨테이너 동작에는 영향이 없고 호스트의 PID만 변경
+
+  
+```bash
+# webserver1 컨테이너 일시정지
+$ docker pause webserver1
+webserver1
+
+# STATUS 열에 (Paused) 됨
+$ docker ps
+CONTAINER ID   IMAGE        COMMAND                  CREATED          STATUS                   PORTS                  NAMES
+aa922c39f991   nginx:1.18   "/docker-entrypoint.…"   36 minutes ago   Up 17 seconds (Paused)   0.0.0.0:8081->80/tcp   webserver1
+
+# webserver1 컨테이너 일시정지 해제
+$ docker unpause webserver1
+webserver1
+
+# (Paused) 사라짐
+$ docker ps
+CONTAINER ID   IMAGE        COMMAND                  CREATED          STATUS          PORTS                                     NAMES
+aa922c39f991   nginx:1.18   "/docker-entrypoint.…"   37 minutes ago   Up 46 seconds   0.0.0.0:8081->80/tcp, [::]:8081->80/tcp   webserver1
+
+# HOST PID 4273 / 
+$ ps -ef | grep 8081
+com       4273  1528  0 19:04 pts/5    00:00:00 grep --color=auto 8081
+
+# webserver1 컨테이너 재시작
+$ docker restart webserver1
+webserver1
+
+# HOST PID 4273 -> 4290
+$ ps -ef | grep 8081
+com       4290  1528  0 19:04 pts/5    00:00:00 grep --color=auto 8081
+```
+
+##
 ### 🐟 실습 : Ngnix 컨테이너 실행
 ```bash
 # nginx 1.18 버전 다운로드
