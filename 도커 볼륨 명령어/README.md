@@ -7,7 +7,7 @@
 
 ## 🐟 도커 볼륨 타입
 ### 1️⃣ volume
-- 도커에서 권장하는 방법 
+- 도커에서 권장하는 방법
 - `docker volume create 볼륨이름`을 통해 볼륨을 생성
 - 여러 컨테이너 간에 안전하게 공유가능  
 
@@ -91,4 +91,65 @@
     my-vol
     ```
 
+    </details>
+
+### 2️⃣ bind
+- 도커 볼륨 기법에 비해 사용이 제한적
+- `호스트 파일 시스템 절대경로:컨테이너 내부경로`를 직접 마운트하여 사용
+- 사용자가 파일 또는 디렉토리를 생성하면 해당 호스트 파일 시스템의 소유자 권한으로 연결
+- 존재하지 않는 경우 자동 생성, 자동 생성된 디렉토리의 소유자는 root
+- 컨테이너 실행 시 지정하여 사용하고, 컨테이너 제거 시 바인드 마운트는 해제되지만 호스트 디렉터리는 유지
+    <details>
+        <summary>[bind 실습]</summary>  
+
+    ```bash
+    # 현재 디렉토리 아래에 target 디렉토리 생성
+    $ mkdir $(pwd)/target
+
+    # 사전 생성한 디렉토리와 bind 마운트 지정
+    $ docker run -d -it --name bind-test1 \
+    > --mount type=bind,source="$(pwd)"/target,target=/var/log \
+    > centos:8
+    Unable to find image 'centos:8' locally
+    ...
+
+    # 사전 생성하지 않은 디렉토리와 bind 마운트 지정
+    $ docker run -d -it --name bind-test2 \
+    > -v "$(pwd)"/target2:/var/log \
+    > centos:8
+    
+    # 사전 생성 target 소유자 : 호스트
+    # 자동 생성 target2 소유자 : root
+    $ ls -l
+    ...
+    drwxr-xr-x 2 com  com       4096 Sep  9 16:11 target
+    drwxr-xr-x 2 root root      4096 Sep  9 16:16 target2
+    ...
+    ```
+    </details>
+
+### 3️⃣ tmpfs
+- 컨테이너 실행시 메모리(RAM)위에 임시 파일시스템을 만들어 사용되는 방법
+- 임시적으로 만들기 때문에 컨테이너가 제거되면 자동으로 메모리에서 해제
+- 호스트 메모리에서만 지속되므로 내부 기록된 파일은 유지되지 않음
+- 호스트 또는 컨테이너 쓰기 가능 계층에서 지속하지 않지만 중요한 파일들 임시로 사용하는 방법에 유용
+    <details>
+        <summary>[bind 실습]</summary>  
+
+    ```bash
+    # --mount 옵션으로 tmpfs 마운트
+    # 메모리기반 임시 파일 시스템이라서 source가 없음
+    $ docker run -d -it --name tmpfs-test1 \
+    > --mount type=tmpfs,destination=/var/www/html \
+    > httpd:2
+
+    # --tmpfs 옵션으로 tmpfs 마운트
+    $ docker run -d -it --name tmpfs-test2 \
+    > --tmpfs /var/www/html \
+    > httpd:2
+
+    # tmpfs로 마운트된 컨테이너 상세정보 조회
+    $ docker inspect --format="{{.HostConfig.Tmpfs}}" tmpfs-test2
+    map[/var/www/html:]
+    ```
     </details>
