@@ -22,6 +22,8 @@ exit
 ##
 ### 🐟 컨테이너 실행
 컨테이너 실행을 위해 `docker run` 명령을 사용하면 해당 도커 이미지 스냅숏 레이어 위에 읽고 쓰기가 가능한 컨테이너 레이어를 추가한 뒤 `docker start` 명령으로 컨테이너를 시작한다. 이렇게 실행된 컨테이너를 조회하는 방법은 `docker ps` 명령을 사용하는 것이다.
+<details>
+    <summary>[실습]</summary>
 
 ```bash
 # docker create : 컨테이너 생성 명령어
@@ -56,6 +58,8 @@ exit
 docker run의 특징은 호스트 서버에 이미지가 다운로드 되어 있지 않아도 로컬에 존재하는 이미지를 도커 허브에서 자동으로 다운로드를 해주고 컨테이너 생성 후 실행까지 함께 처리된다는 점이다.
 > docker run = [pull] + create + start + [command]
 
+</details>
+
 ##
 ### 🐟 컨테이너 재시작 및 일시정지
 ```bash
@@ -69,7 +73,9 @@ docker restart 컨테이너 # 컨테이너 재시작
 - ***docker restart***  
     컨테이너 재시작은 기존 컨테이너 프로세스를 정지하고 새로운 컨테이너 프로세스를 시작하는 것이다. 컨테이너 동작에는 영향이 없고 호스트의 PID만 변경
 
-  
+<details>
+    <summary>[실습]</summary>
+
 ```bash
 # webserver1 컨테이너 일시정지
 $ docker pause webserver1
@@ -101,9 +107,13 @@ webserver1
 $ ps -ef | grep 8081
 com       4290  1528  0 19:04 pts/5    00:00:00 grep --color=auto 8081
 ```
+</details>
 
 ##
 ### 🐟 실습 : Ngnix 컨테이너 실행
+<details>
+    <summary>[Ngnix 실습]</summary>
+    
 ```bash
 # nginx 1.18 버전 다운로드
 $ docker pull nginx:1.18
@@ -159,3 +169,5 @@ $ docker cp index.html webserver1:/usr/share/nginx/html/index.html
 $ curl localhost:8081
 <h1>Hello World!</h1>
 ```
+
+</details>
